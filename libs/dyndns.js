@@ -34,16 +34,24 @@ var crypto = require('crypto');
 var log = require('../libs/log').log;
 var HOST = require('../libs/db').HOST;
 
-function onUpdate(req, res, query) {
+function onUpdateLegacy(req, res, query)
+{
     // check that all needed params were given
     // currently we only support the hostname
     // hostname=yourhostname&myip=ipaddress&wildcard=NOCHG&mx=NOCHG&backmx=NOCHG
-    if (!query.hasOwnProperty("hostname")) {
-        res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.write("Missing argument: hostname");
-        res.end();
+    if(!query.hasOwnProperty("hostname"))
+    {
+        res.writeHead(200,{'Content-Type':'text/plain'});
+        res.end("Missing argument: hostname");
         return;
     }
+
+    onUpdate(req, res);
+}
+
+function onUpdate(req, res)
+{
+    res.writeHead(200,{'Content-Type':'text/plain'});
 
     // this is a bit uncool (to get the password again) but the dyndns logic needs the password as well
     var header = req.headers['authorization'] || '';
@@ -55,7 +63,6 @@ function onUpdate(req, res, query) {
     var password = parts[1];
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end();
 
     var md5 = crypto.createHash('md5');
     md5.update(password);
@@ -63,7 +70,9 @@ function onUpdate(req, res, query) {
 
     HOST.find({where: {domain: username, password: hashed}}).success(function (host) {
         if (host === null) {
-            log.warn('err: could not find host');
+            log.warn('err: could not find host %s', username);
+            // every error is badauth for now
+            res.end("badauth");
         }
         else {
             //path ok, check if IP has changed
@@ -78,19 +87,26 @@ function onUpdate(req, res, query) {
                 host.save().then(function () {
                     log.info('host %s updated with ip %s', username, ip);
                 });
+
+                res.end("good " + ip);
             }
             else {
                 log.debug('host %s ip did not change', username);
+
+                // tell the client, that no update is needed
+                res.end("nochg " + ip);
             }
-
-            res.write("nochg " + ip);
         }
+    }).error(function(error){
+        log.error(error);
 
-        res.end();
+        // every error is badauth for now
+        res.end("badauth");
     });
 }
 
 // Exporting.
 module.exports = {
-    onUpdate: onUpdate
+    onUpdate: onUpdate,
+    onUpdateLegacy: onUpdateLegacy
 };

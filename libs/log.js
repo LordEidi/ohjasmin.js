@@ -30,6 +30,12 @@
  -----------------------------------------------------------------------------*/
 
 var log4js = require('log4js');
+
+log4js.clearAppenders();
+log4js.loadAppender('file');
+//log4js.addAppender(log4js.appenders.console());
+log4js.addAppender(log4js.appenders.file('ohjasmin.log'), 'ohjasmindns');
+
 var log = log4js.getLogger("ohjasmindns");
 
 function initialise()

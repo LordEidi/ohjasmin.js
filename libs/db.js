@@ -43,23 +43,29 @@ var sequelize = new Sequelize(config.db_name, config.db_uid, config.db_pwd, {
 var HOST = sequelize.define('host', {
     domain: { type: Sequelize.STRING, allowNull: false, unique: true, primaryKey: true},
     password: { type: Sequelize.STRING, allowNull: false},
-    ip: { type: Sequelize.STRING, allowNull: false}
+    ip: { type: Sequelize.STRING, allowNull: false, defaultValue: '127.0.0.1'},
+    type: { type: Sequelize.STRING, allowNull: false, defaultValue: '='},
+    ttl: { type: Sequelize.INTEGER, allowNull: false, defaultValue: 300}
 },{
     underscored: true,
     timestamps: true
 });
 
-sequelize.sync().then(function()
-    {
-        log.info("Database structure updated");
-    }).error(function(error)
-    {
-        log.error("Database structure update crashed: " + error);
-    }
-);
+function init()
+{
+    sequelize.sync().then(function()
+        {
+            log.info("Database structure updated");
+        }).error(function(error)
+        {
+            log.error("Database structure update crashed: " + error);
+        }
+    );
+}
 
 // Exporting.
 module.exports = {
     HOST: HOST,
+    init: init,
     sequelize: sequelize
 };

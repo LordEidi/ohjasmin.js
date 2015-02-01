@@ -51,9 +51,41 @@ function checkLogin(username, password, callback)
 
     // if user exists, let her in
     HOST.count({ where: { domain: username, password: hashed }})
-    .then(function(count) {
-            callback((count > 0));
-    });
+        .then(function(count) {
+                callback((count > 0));
+        }).error(function(error){
+            log.error(error);
+            callback(false);
+        });;
+}
+
+function checkLoginLegacy(username, password, callback)
+{
+    log.info("Login process started for user: " + username);
+
+    var md5 = crypto.createHash('md5');
+    md5.update(password);
+
+    log.debug("Authentication attempt for user: " + username + " with password: " + password);
+
+    // concat the string to a path
+    var path = config.dnsRoot + "/" + username + "/" + md5.digest('hex');
+
+    log.debug("Path to user directory: " + path);
+
+    var fs = require('fs');
+
+    // check if path exists
+    if(fs.existsSync(path))
+    {
+        log.info("Login for user " + username + " successful.");
+        callback(true);
+    }
+    else
+    {
+        log.info("Login for user " + username + " denied.");
+        callback(false);
+    }
 }
 
 // Exporting.

@@ -53,6 +53,8 @@ var url  = require('url');
 
 var auth = require('http-auth');
 
+var db = require('./libs/db');
+
 //-----------------------------------------------------------------------------
 var basic = auth.basic({
         realm: "Oh Jasmin Dynamic DNS"
@@ -62,7 +64,11 @@ var basic = auth.basic({
 		}
 );
 
-crossroads.addRoute('/nic/update{?query}', dyndns.onUpdate);
+//-----------------------------------------------------------------------------
+// legacy way, move to new URL method if you do not absolutely need this schema
+crossroads.addRoute('/nic/update{?query}', dyndns.onUpdateLegacy);
+crossroads.addRoute('/ddns/update/', dyndns.onUpdate);
+
 crossroads.bypassed.add(onBypass);
 
 function onBypass(req, res, path)
@@ -80,6 +86,8 @@ function onBypass(req, res, path)
 	res.end(json);
 }
 
+db.init();
+
 //-----------------------------------------------------------------------------
 var server = http.createServer(basic, function (req, res)
 {
@@ -95,4 +103,6 @@ server.on('error', function (e)
 
 server.listen(config.port, config.ip);
 log.info("Server running at http://" + config.ip + ":" + config.port + "/");
+log.debug("Test ohjasmin.js with that url: http://domain:password@" + config.ip + ":" + config.port + "/ddns/update/");
+
 
