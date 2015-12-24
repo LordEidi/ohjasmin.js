@@ -29,8 +29,6 @@
  **
  -----------------------------------------------------------------------------*/
 
-var crypto = require('crypto');
-
 var log = require('../libs/log').log;
 var HOST = require('../libs/db').HOST;
 
@@ -40,7 +38,7 @@ function onUpdate(req, res, query) {
     // hostname=yourhostname&myip=ipaddress&wildcard=NOCHG&mx=NOCHG&backmx=NOCHG
     if (!query.hasOwnProperty("hostname")) {
         res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.write("Missing argument: hostname");
+        res.write("nohost");
         res.end();
         return;
     }
@@ -52,18 +50,15 @@ function onUpdate(req, res, query) {
     var parts = auth.split(/:/);
 
     var username = parts[0].replace('/[^a-zA-Z0-9_-.]/g' , '');
-    var password = parts[1];
 
     res.writeHead(200, {'Content-Type': 'text/plain'});
-    res.end();
 
-    var md5 = crypto.createHash('md5');
-    md5.update(password);
-    var hashed = md5.digest('hex');
+    HOST.find({where: {domain: username}}).then(function (host, error) {
 
-    HOST.find({where: {domain: username, password: hashed}}).success(function (host) {
-        if (host === null) {
-            log.warn('err: could not find host');
+        if(error || !host) {
+            log.warn('could not find host');
+            res.write("nohost");
+            res.end();
         }
         else {
             //path ok, check if IP has changed
@@ -77,16 +72,16 @@ function onUpdate(req, res, query) {
 
                 host.save().then(function () {
                     log.info('host %s updated with ip %s', username, ip);
+                    res.write("good " + ip);
+                    res.end();
                 });
             }
             else {
-                log.debug('host %s ip did not change', username);
+                log.info('host %s ip did not change', username);
+                res.write("nochg " + ip);
+                res.end();
             }
-
-            res.write("nochg " + ip);
         }
-
-        res.end();
     });
 }
 

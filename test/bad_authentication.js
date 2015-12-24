@@ -2,7 +2,7 @@
  **
  ** - Oh Jasmin Dynamic DNS -
  **
- ** Copyright 2000 - 2015 by
+ ** Copyright 2015 by
  ** SwordLord - the coding crew - http://www.swordlord.com
  ** and contributing authors
  **
@@ -23,46 +23,41 @@
  **
  ** Original Authors:
  ** LordEidi@swordlord.com
- ** LordFilu@swordlord.com
  **
  ** $Id:
  **
  -----------------------------------------------------------------------------*/
+var test = require('tape');
+var request = require('request');
 
-var bcrypt = require('bcryptjs');
+var config = require('../config').config;
 
-var config = require('./config').config;
+var username = config.test_user_bad_name;
+var password = config.test_user_bad_pwd;
 
-var log = require('./libs/log').log;
-var DB = require('./libs/db');
-var HOST = DB.HOST;
+test('Authentication denied with wrong user', function (t) {
 
-var bcrypt = require('bcryptjs');
-var salt = bcrypt.genSaltSync(config.bcrypt_rounds);
-var hash = bcrypt.hashSync(config.test_user_good_pwd, salt);
+    t.plan(2);
 
-// Give the db script a chance to sync
-setTimeout(function() {
-        addHostRecord();
-    }, 1000);
+    var options = {
+        method: 'GET',
+        uri: "http://" + config.ip_test + ":" + config.port + "/",
+        auth: {
+            'user': username,
+            'pass': password,
+            'sendImmediately': true
+        } ,
+        followRedirect: false
+    }
 
-function addHostRecord() {
+    request(options, function (error, response, body) {
 
-    HOST.findOrCreate({
-        where: {domain: config.test_user_good_name},
-        defaults: {
-            password: hash,
-            ip: "127.0.0.3"
-        }
-    }).spread(function (host, created) {
-        if (created) {
-            log.debug('Created host: ' + JSON.stringify(host, null, 4));
-            host.save().then(function () {
-                log.info('host updated');
-            });
+        if (!error) {
+            t.equal(response.statusCode, 401, "StatusCode matches");
+            t.equal(response.headers["www-authenticate"], "Basic realm=\"Oh Jasmin Dynamic DNS\"", "Authentication realm matches");
         }
         else {
-            log.debug('Loaded host: ' + JSON.stringify(host, null, 4));
+            t.fail();
         }
     });
-};
+});

@@ -23,14 +23,25 @@
  **
  ** Original Authors:
  ** LordEidi@swordlord.com
- ** LordFilu@swordlord.com
  **
  ** $Id:
  **
  -----------------------------------------------------------------------------*/
 
+var config = require('../config').config;
+
 var log4js = require('log4js');
+
+log4js.configure({
+    appenders: [
+        { type: 'console' },
+        { type: 'file', filename: config.log_file, category: 'ohjasmindns' }
+    ],
+    replaceConsole: true
+});
+
 var log = log4js.getLogger("ohjasmindns");
+log.setLevel(config.log_level);
 
 function initialise()
 {

@@ -38,9 +38,9 @@
 // the only special char allowed is the dot in the user id and in the fully qualified domainname
 
 //-----------------------------------------------------------------------------
-var log = require('./libs/log').log;
-
 var config = require('./config').config;
+
+var log = require('./libs/log').log;
 var authlib = require('./libs/authentication');
 
 var dyndns = require('./libs/dyndns');
@@ -53,7 +53,7 @@ var url  = require('url');
 
 var auth = require('http-auth');
 
-//-----------------------------------------------------------------------------
+// authentication stuff
 var basic = auth.basic({
         realm: "Oh Jasmin Dynamic DNS"
     }, function (username, password, callback) 
@@ -65,34 +65,32 @@ var basic = auth.basic({
 crossroads.addRoute('/nic/update{?query}', dyndns.onUpdate);
 crossroads.bypassed.add(onBypass);
 
+// what happens if not the standard URL was called
 function onBypass(req, res, path)
 {
 	log.info('URL unknown: ' + path);
 
+    // this is actually a non standard reply...
 	res.writeHead(200, {'Content-Type': 'text/plain'});
-
-	var json = JSON.stringify({
-		info: path,
-		exitCode: -1,
-		programOutput: 'function unknown'
-	});
-
-	res.end(json);
+	res.end("FUNCTUNKNOWN");
 }
 
-//-----------------------------------------------------------------------------
+// the server
 var server = http.createServer(basic, function (req, res)
 {
 	var sUrl = url.parse(req.url).path;
 	log.debug("Processing request for path: " + sUrl);
+
 	crossroads.parse(sUrl, [req, res]);
 });
 
+// make sure that the server does not crash on unhandled errors
 server.on('error', function (e)
 {
-	log.debug("Error: " + e);
+	log.error("Error: " + e);
 });
 
-server.listen(config.port, config.ip);
-log.info("Server running at http://" + config.ip + ":" + config.port + "/");
+// start server
+server.listen(config.port, config.ip_server);
+log.info("Server running at http://" + config.ip_server + ":" + config.port + "/");
 

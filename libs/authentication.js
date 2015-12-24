@@ -33,26 +33,32 @@ var log = require('../libs/log').log;
 
 var HOST = require('../libs/db').HOST;
 
-var crypto = require('crypto');
+var bcrypt = require('bcryptjs');
+
+var config = require('../config').config;
 
 function checkLogin(username, password, callback)
 {
     // clean the username from unwanted characters
     username = username.replace('/[^a-zA-Z0-9_-.]/g' , '');
 
-    log.info("Login process started for user: " + username);
-
-    // hash password, do NOT log unhashed!
-    var md5 = crypto.createHash('md5');
-    md5.update(password);
-    var hashed = md5.digest('hex');
-
-    log.debug("Authentication attempt for user: " + username + " with password (hashed): " + hashed);
-
     // if user exists, let her in
-    HOST.count({ where: { domain: username, password: hashed }})
-    .then(function(count) {
-            callback((count > 0));
+    HOST.findOne({ where: { domain: username }})
+    .then(function(domain, error) {
+
+        if(error || !domain) {
+            log.warn("Authentication attempt for user %s was not successful", username);
+            callback(false);
+            return;
+        }
+
+        var hashed = domain.password;
+
+        bcrypt.compare(password, hashed, function(err, result) {
+            log.info("Authentication attempt for user %s was %s", username, result);
+            callback(result);
+        });
+
     });
 }
 

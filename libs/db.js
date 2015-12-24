@@ -23,23 +23,31 @@
  **
  ** Original Authors:
  ** LordEidi@swordlord.com
- ** LordFilu@swordlord.com
  **
  ** $Id:
  **
  -----------------------------------------------------------------------------*/
 
-var log = require('../libs/log').log;
+
 var config = require('../config').config;
+var log = require('../libs/log').log;
 
 var Sequelize = require('sequelize');
 
 var sequelize = new Sequelize(config.db_name, config.db_uid, config.db_pwd, {
     dialect: config.db_dialect,
-    logging: config.db_logging,
-    storage: config.db_storage
+    storage: config.db_storage,
+    logging: logdb
 });
 
+function logdb(message)
+{
+    if(config.db_logging) {
+        log.debug(message);
+    }
+}
+
+// host is the only table we need
 var HOST = sequelize.define('host', {
     domain: { type: Sequelize.STRING, allowNull: false, unique: true, primaryKey: true},
     password: { type: Sequelize.STRING, allowNull: false},
@@ -52,11 +60,13 @@ var HOST = sequelize.define('host', {
 sequelize.sync().then(function()
     {
         log.info("Database structure updated");
+
     }).error(function(error)
     {
         log.error("Database structure update crashed: " + error);
     }
 );
+
 
 // Exporting.
 module.exports = {

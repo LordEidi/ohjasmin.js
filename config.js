@@ -2,7 +2,7 @@
  **
  ** - Oh Jasmin Dynamic DNS -
  **
- ** Copyright 2000 - 2014 by
+ ** Copyright 2000 - 2015 by
  ** SwordLord - the coding crew - http://www.swordlord.com
  ** and contributing authors
  **
@@ -23,7 +23,6 @@
  **
  ** Original Authors:
  ** LordEidi@swordlord.com
- ** LordFilu@swordlord.com
  **
  ** $Id:
  **
@@ -34,18 +33,33 @@
 var config =
 {
     // server specific configuration
-    // please use a proxy in front of fennel to support TLS
+    // please use a proxy in front of ohjasmin to support TLS
     // we suggest you use nginx as the TLS endpoint
     port: 8888,
-    ip: '127.0.0.1',
+    ip_test: '127.0.0.1',
+    ip_server: '127.0.0.1',
 
     // db specific configuration. you can use whatever sequelize supports.
     db_name: 'ohjasmin',
     db_uid: 'uid',
     db_pwd: 'pwd',
     db_dialect: 'sqlite',
+    // if true, sql queries will be logged as DEBUG messages
     db_logging: true,
-    db_storage: 'ohjasmin.sqlite'
+    db_storage: 'ohjasmin.sqlite',
+
+    // logging
+    log_level: 'DEBUG',
+    log_file: 'ohjasmin.log',
+
+    // used for hashing passwords
+    bcrypt_rounds: 10,
+
+    // user accounts used for testing
+    test_user_good_name: 'dyndns.example.org',
+    test_user_good_pwd: 'test',
+    test_user_bad_name: 'demo',
+    test_user_bad_pwd: 'demo'
 };
 
 // Exporting.
