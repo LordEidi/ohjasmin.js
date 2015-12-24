@@ -32,7 +32,8 @@
 var log = require('../libs/log').log;
 var HOST = require('../libs/db').HOST;
 
-function onUpdate(req, res, query) {
+function onUpdateLegacy(req, res, query)
+{
     // check that all needed params were given
     // currently we only support the hostname
     // hostname=yourhostname&myip=ipaddress&wildcard=NOCHG&mx=NOCHG&backmx=NOCHG
@@ -42,6 +43,13 @@ function onUpdate(req, res, query) {
         res.end();
         return;
     }
+
+    onUpdate(req, res);
+}
+
+function onUpdate(req, res)
+{
+    res.writeHead(200,{'Content-Type':'text/plain'});
 
     // this is a bit uncool (to get the password again) but the dyndns logic needs the password as well
     var header = req.headers['authorization'] || '';
@@ -87,5 +95,6 @@ function onUpdate(req, res, query) {
 
 // Exporting.
 module.exports = {
-    onUpdate: onUpdate
+    onUpdate: onUpdate,
+    onUpdateLegacy: onUpdateLegacy
 };

@@ -62,7 +62,11 @@ var basic = auth.basic({
 		}
 );
 
-crossroads.addRoute('/nic/update{?query}', dyndns.onUpdate);
+//-----------------------------------------------------------------------------
+// legacy way, move to new URL method if you do not absolutely need this schema
+crossroads.addRoute('/nic/update{?query}', dyndns.onUpdateLegacy);
+crossroads.addRoute('/ddns/update/', dyndns.onUpdate);
+
 crossroads.bypassed.add(onBypass);
 
 // what happens if not the standard URL was called
