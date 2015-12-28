@@ -58,12 +58,12 @@ Make sure you change the configuration to your local setup.
 
 There is a small script in the utilities folder which helps in adding and updating domain records. You can see the options when calling it with the --help argument:
 
-    node add_users.js --help
+    node add_domain.js --help
     
 Adding the test users for the tests below would require you to do this:
 
-    node add_users.js -f dyndns.example.org -p test -i 127.0.0.4
-    node add_users.js -f demo -p demo -i 127.0.0.4
+    node add_domain.js -f dyndns.example.org -p test -i 127.0.0.4
+    node add_domain.js -f demo -p demo -i 127.0.0.4
 
 See this link for details regarding the -t/--type argument: http://cr.yp.to/djbdns/tinydns-data.html
 
