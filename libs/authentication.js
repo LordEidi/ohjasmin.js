@@ -7,17 +7,17 @@
  ** and contributing authors
  **
  ** This program is free software; you can redistribute it and/or modify it
- ** under the terms of the GNU General Public License as published by the Free
- ** Software Foundation, either version 3 of the License, or (at your option)
- ** any later version.
+ ** under the terms of the GNU Affero General Public License as published by
+ ** the Free Software Foundation, either version 3 of the License, or
+ ** (at your option) any later version.
  **
  ** This program is distributed in the hope that it will be useful, but WITHOUT
  ** ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- ** FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- ** more details.
+ ** FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Affero General Public License
+ ** for more details.
  **
- ** You should have received a copy of the GNU General Public License along
- ** with this program. If not, see <http://www.gnu.org/licenses/>.
+ ** You should have received a copy of the GNU Affero General Public License
+ ** along with this program. If not, see <http://www.gnu.org/licenses/>.
  **
  **-----------------------------------------------------------------------------
  **
@@ -60,6 +60,36 @@ function checkLogin(username, password, callback)
         });
 
     });
+}
+
+// WARNING, THIS CODE IS NOT TESTED YET!
+function checkLoginLegacy(username, password, callback)
+{
+    log.info("Login process started for user: " + username);
+
+    var md5 = crypto.createHash('md5');
+    md5.update(password);
+
+    log.debug("Authentication attempt for user: " + username + " with password: " + password);
+
+    // concat the string to a path
+    var path = config.dnsRoot + "/" + username + "/" + md5.digest('hex');
+
+    log.debug("Path to user directory: " + path);
+
+    var fs = require('fs');
+
+    // check if path exists
+    if(fs.existsSync(path))
+    {
+        log.info("Login for user " + username + " successful.");
+        callback(true);
+    }
+    else
+    {
+        log.info("Login for user " + username + " denied.");
+        callback(false);
+    }
 }
 
 // Exporting.
