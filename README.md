@@ -65,8 +65,9 @@ Adding the test users for the tests below would require you to do this:
     node add_domain.js -f dyndns.example.org -p test -i 127.0.0.4
     node add_domain.js -f demo -p demo -i 127.0.0.4
 
-See this link for details regarding the -t/--type argument: http://cr.yp.to/djbdns/tinydns-data.html
+See this link for details regarding the -t/--type argument: http://cr.yp.to/djbdns/tinydns-data.html.
 
+**Warning** If your configuration file has relative paths for sqlite files, make sure to run add_domain from the same folder as you run **ohjasmin.js** from.
 
 ###How to set up transport security###
 

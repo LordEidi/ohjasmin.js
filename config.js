@@ -52,6 +52,12 @@ var config =
     log_level: 'DEBUG',
     log_file: 'ohjasmin.log',
 
+    // file to be touched to have incron wake up the update script
+    update_trigger_file: 'update.trigger',
+    update_dyndata_destination: 'dyndata',
+    update_files_chmod: '0600',
+    update_main_script: 'utilities/updatedns.sh',
+
     // used for hashing passwords
     bcrypt_rounds: 10,
 
