@@ -82,6 +82,18 @@ function onUpdate(req, res)
                     log.info('host %s updated with ip %s', username, ip);
                     res.write("good " + ip);
                     res.end();
+
+                    // touch trigger file
+                    var fs = require('fs');
+
+                    var triggerFile = config.update_trigger_file;
+                    var chmod = config.update_files_chmod;
+
+                    fs.writeFileSync(triggerFile, '', { encoding: 'utf8' });
+                    fs.chmodSync(triggerFile, chmod)
+
+                    log.info('Triggerfile %s written', triggerFile);
+
                 });
             }
             else {
