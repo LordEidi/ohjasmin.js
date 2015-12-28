@@ -3,13 +3,13 @@ ohjasmin.js
 
 ![ohjasmin.js](https://raw.githubusercontent.com/LordEidi/ohjasmin.js/master/ohjasmin_logo.png)
 
-**ohjasmin.js** and **ohjasmindns** (c) 2000-2015 by [SwordLord - the coding crew](http://www.swordlord.com/)
+**ohjasmin.js** and **ohjasmindns** (c) 2000-2015 by [SwordLord - the coding crew](https://www.swordlord.com/)
 
 ## Introduction ##
 
 **ohjasmin.js** is a poor woman's dyndns solution based on node.js and dbndns or alternatively djbdns. Send a web requests to your instance of **ohjasmin.js** and **ohjasmin.js** takes care that your hostname always points to your current IP address.
 
-**ohjasmin.js** feeds an instance of djbdns or dbndns. It does so indirectly and uses an intermediate store for your dyndns data. Which means that with a few lines of script you could add your own DNS backend.
+**ohjasmin.js** feeds an instance of djbdns or dbndns. It does so indirectly and uses an intermediate store for your dyndns data. Which means that by adding **ohjasmin.js** to your setup you get your very own dynamic DNS backend.
 
 
 ## Status ##
@@ -18,7 +18,6 @@ While the PHP version of **ohjasmindns** is running since years, **ohjasmin.js**
 
 Whats missing:
 
-- Script to add new domains
 - Update script to update your instance of dbndns when your IP address changes.
 
 
@@ -55,73 +54,40 @@ Then copy the file utilities/ohjasmin_supervisor.conf into your local supervisor
     
 Make sure you change the configuration to your local setup.
 
+### Adding hosts ###
+
+There is a small script in the utilities folder which helps in adding and updating domain records. You can see the options when calling it with the --help argument:
+
+    node add_users.js --help
+    
+Adding the test users for the tests below would require you to do this:
+
+    node add_users.js -f dyndns.example.org -p test -i 127.0.0.4
+    node add_users.js -f demo -p demo -i 127.0.0.4
+
+See this link for details regarding the -t/--type argument: http://cr.yp.to/djbdns/tinydns-data.html
+
+
 ###How to set up transport security###
 
 Since **ohjasmin.js** does not bring it's own transport crypto, you may need to install a TLS server in front of **ohjasmin.js**. You can do so
 with nginx, which is a lightweight http server and proxy.
 
-First prepare your /etc/apt/sources.list file (or just install the standard Debian package, your choice):
+Please see [transport security](TRANSPORT_SECURITY.md) for details.
 
-    deb http://nginx.org/packages/debian/ jessie nginx
-    deb-src http://nginx.org/packages/debian/ jessie nginx
-
-Update apt-cache and install nginx to your system.
-
-    sudo update
-    sudo apt-get install nginx
-
-Now configure a proxy configuration so that your instance of nginx will serve / prox the content of / for the
-**ohjasmin.js** server. To do so, you will need a configuration along this example:
-
-    server {
-        listen   443;
-        server_name  dyndns.yourdomain.tld;
-
-        access_log  /var/www/logs/jasmin_access.log combined;
-        error_log  /var/www/logs/jasmin_error.log;
-
-        root /var/www/pages/;
-        index  index.html index.htm;
-
-        error_page   500 502 503 504  /50x.html;
-        location = /50x.html {
-            root   /var/www/nginx-default;
-        }
-
-        location / {
-            proxy_pass         http://127.0.0.1:8888;
-            proxy_redirect     off;
-            proxy_set_header   Host             $host;
-            proxy_set_header   X-Real-IP        $remote_addr;
-            proxy_set_header   X-Forwarded-For  $proxy_add_x_forwarded_for;
-            proxy_buffering    off;
-        }
-
-        ssl  on;
-        ssl_certificate  /etc/nginx/certs/yourdomain.tld.pem;
-        ssl_certificate_key  /etc/nginx/certs/yourdomain.tld.pem;
-        ssl_session_timeout  5m;
-
-        # modern configuration. tweak to your needs.
-        ssl_protocols TLSv1.1 TLSv1.2;
-        ssl_ciphers 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK';
-        ssl_prefer_server_ciphers on;
-    
-        # HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
-        add_header Strict-Transport-Security max-age=15768000;
-    }
-
-Please check this site for updates on what TLS settings currently make sense:
-
-    https://mozilla.github.io/server-side-tls/ssl-config-generator/
-
-Now run or reset your nginx and start your instance of **ohjasmin.js**.
-
-Thats it, your instance of **ohjasmin.js** should run now. All logs are sent to stdout and ohjasmin.log.
 
 ## Configuration ##
 
 All parameters which can be configured right now are in the file *config.js*.
+
+| Option        | Description           | 
+| ------------- |:-------------:| 
+| port     | On which port ohjasmin.js should run. |
+| ip_server     | The IP address on which the server binds to. |
+| ip_test     | Which IP address the test script will call. |
+| db_*     | The configuration of your database backend. db_storage can contain whatever sequelize can talk to. |
+| log_*     | Configure the logging options here. A sane configuration would be to use level WARN in production. |
+| bcrypt_rounds     | How many rounds should be used to hash the domain passwords. |
 
 
 ## Testing ##
@@ -130,7 +96,7 @@ Run **ohjasmin.js** and then run the tests with this command:
 
     npm test
     
-if everything is fine, you should get no errors.
+if everything is fine, you should get no errors. Please make sure to add the test users before running these tests. See chapter [adding hosts](#adding-hosts) above.
 
 
 ## Contribution ##
@@ -140,7 +106,7 @@ If you happen to know how to write JavaScript, documentation or can help out wit
 
 ## Dependencies ##
 
-For now, have a look at the package.json file.
+You will need node.js and either dbndns or djbdns to make use of **ohjasmin.js**.
 
 
 ## License ##
