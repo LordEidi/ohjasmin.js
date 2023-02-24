@@ -5,6 +5,10 @@ ohjasmin.js
 
 **ohjasmin.js** and **ohjasmindns** (c) 2000-2015 by [SwordLord - the coding crew](https://www.swordlord.com/)
 
+## Archived ##
+
+This project is not actively maintained anymore.
+
 ## Introduction ##
 
 **ohjasmin.js** is a poor woman's dyndns solution based on node.js and dbndns or alternatively djbdns. Send a web requests to your instance of **ohjasmin.js** and **ohjasmin.js** takes care that your hostname always points to your current IP address.
